@@ -14,7 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="wwwroot\js\notification-permissions.js" />
-    <None Include="wwwroot\screenshot.png" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="Views\Xor\Index.cshtml" />
