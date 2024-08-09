@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Newtonsoft.Json;
 using XorApp.Models;
 
 namespace XorApp.Services
@@ -58,18 +59,18 @@ namespace XorApp.Services
                 throw new ArgumentException("No file was uploaded.");
             }
 
-            string fileName = pm.BinaryFile.FileName;
-            string destinationPath = Path.Combine(
+            var fileName = pm.BinaryFile.FileName;
+            var destinationPath = Path.Combine(
                 Path.GetTempPath(),
                 $"XOR_Size{pm.XorSize}_Key{pm.CurrentKey.Replace(" ", "")}_{fileName}"
             );
 
             using var memoryStream = new MemoryStream();
             await pm.BinaryFile.CopyToAsync(memoryStream);
-            byte[] buffer = memoryStream.ToArray();
+            var buffer = memoryStream.ToArray();
 
-            int xorSize = int.Parse(pm.XorSize);
-            byte[] xorValue = ConvertHexStringToByteArray(pm.CurrentKey);
+            var xorSize = int.Parse(pm.XorSize);
+            var xorValue = ConvertHexStringToByteArray(pm.CurrentKey);
 
             for (var i = 0; i < buffer.Length; i += xorSize)
             {
@@ -91,19 +92,27 @@ namespace XorApp.Services
                 .ToArray();
         }
 
-        public static byte[] GenerateRandomKey(int bitLength)
+        private byte[] GenerateRandomKey(int byteLength)
         {
-            if (!new[] { 8, 16, 32, 64, 128 }.Contains(bitLength))
-            {
-                throw new ArgumentException("Bit length must be 8, 16, 32, 64, or 128.");
-            }
-
-            var byteLength = bitLength / 8;
             var randomBytes = new byte[byteLength];
 
             RandomNumberGenerator.Fill(randomBytes);
 
             return randomBytes;
+        }
+
+        public string BuildKeyView(int bitLength)
+        {
+            var randomKey = BitConverter.ToString(GenerateRandomKey(bitLength)).Replace("-", "");
+            var obj = new
+            {
+                CurrentKey = KeyAsHex(randomKey),
+                CurrentValueHex = KeyAsHex(randomKey),
+                CurrentValueBinary = KeyAsBinary(randomKey),
+                CurrentValueInt = KeyAsInt(randomKey)
+            };
+            var json = JsonConvert.SerializeObject(obj);
+            return json;
         }
 
         private string KeyAsBinary(string hexKey)

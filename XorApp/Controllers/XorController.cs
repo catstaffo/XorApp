@@ -30,5 +30,16 @@ public class XorController : Controller
         var vm = _xorService.BuildXorIndex(pm);
         return View(vm);
     }
+    
+    public IActionResult Submit(XorIndexPM pm)
+    {
+        var vm = _xorService.BuildXorIndex(pm);
+        return View("Index", vm);
+    }
 
+    public JsonResult GenerateKey(int bitLength)
+    {
+        var test = _xorService.BuildKeyView(bitLength);
+        return new JsonResult(_xorService.BuildKeyView(bitLength));
+    }
 }
